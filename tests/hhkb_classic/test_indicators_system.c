@@ -30,26 +30,26 @@ int main(void) {
     keyboard_platform_tick(500);
     assert(gpio[8]);
 
+    // System 1/2 are swallowed but no longer change the system or layers.
     assert(hhkb_process_key(HHKB_SYSTEM_2, true));
-    assert(system_id == 1 && state == 7);
     assert(hhkb_process_key(HHKB_SYSTEM_2, false));
-    assert(system_id == 1 && state == 7);
-    assert(hhkb_process_key(HHKB_SYSTEM_1, false));
-    assert(system_id == 1 && state == 7);
     assert(hhkb_process_key(HHKB_SYSTEM_1, true));
+    assert(hhkb_process_key(HHKB_SYSTEM_1, false));
     assert(system_id == 0 && state == 3);
 
     state = 1;
     keyboard_platform_tick(500);
     assert(!gpio[8]);
-    assert(hhkb_process_key(HHKB_SYSTEM_2, true));
-    assert(system_id == 1 && state == 5);
     assert(!hhkb_process_key(MO(3), true));
+    assert(!hhkb_process_key(LM(2, MOD_LALT), true));
+    system_id = 1; // A stale stored "System 2" must not light mode 4 or move layers.
+    keyboard_platform_init();
+    assert(state == 1);
     modes[0] = 2;
     modes[1] = 4;
     hhkb_hid_led_change(2);
     keyboard_platform_tick(500);
-    assert(gpio[8] && gpio[9]);
+    assert(gpio[8] && !gpio[9]);
     suspended = true;
     keyboard_platform_tick(500);
     assert(!gpio[8] && !gpio[9]);
