@@ -197,6 +197,20 @@ static void process_matrix_action(uint8_t row, uint8_t col, uint32_t key, bool p
         return;
     }
 
+    // 3b. Layer-Mod (LM(layer, mods)): layer active and mods held while pressed
+    if ((key & 0xFF000000) == DMK_LM) {
+        uint8_t lyr = (uint8_t)(key & 0xFF);
+        uint8_t mod_mask = (uint8_t)((key >> 8) & 0xFF);
+        if (pressed) {
+            layers_on(lyr);
+            keyboard_send_modifiers(mod_mask, true);
+        } else {
+            keyboard_send_modifiers(mod_mask, false);
+            layers_off(lyr);
+        }
+        return;
+    }
+
     // 4. Toggle Layer (TG(layer)) persistent state toggle
     if ((key & 0xFF000000) == DMK_TG) {
         uint8_t lyr = (uint8_t)(key & 0xFF);
