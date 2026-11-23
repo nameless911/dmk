@@ -12,9 +12,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* One owner for PA8 and PA9: off, heartbeat, Caps Lock, Fn, system 2. */
+/* One owner for PA8 and PA9: off, heartbeat, Caps Lock, Fn. Mode 4 (former
+ * "System 2") is kept in the menu but always off. */
 static const pin_t led_pins[2] = { A8, A9 };
 // VIA protocol 12 assigns custom keycodes from 0x7E00 in JSON order.
+// System 1/2 no longer switch layer pairs; the codes are swallowed as no-ops so
+// they keep their slots (Hybrid BT codes follow) and never reach MIDI CC.
 enum {
     HHKB_SYSTEM_1 = 0x7E00,
     HHKB_SYSTEM_2 = 0x7E01,
@@ -22,13 +25,7 @@ enum {
 
 static bool caps_lock;
 
-static void update_system_layer(void) {
-    uint16_t state = layers_get_state() & (uint16_t)~(1U << 2);
-    if (hhkb_get_system()) state |= 1U << 2;
-    layers_set_state(state | 1U);
-}
-
-void keyboard_platform_init(void) { update_system_layer(); }
+void keyboard_platform_init(void) {}
 TickType_t keyboard_platform_timeout(void) {
 #ifdef HHKB_HYBRID
     return pdMS_TO_TICKS(hhkb_hybrid_indicator_wait_ms(xTaskGetTickCount()));
@@ -68,7 +65,6 @@ void keyboard_platform_tick(TickType_t now) {
             case 1: on = heartbeat; break;
             case 2: on = caps_lock; break;
             case 3: on = (layers_get_state() & ((1U << 1) | (1U << 3))) != 0; break;
-            case 4: on = hhkb_get_system() != 0; break;
             default: break;
             }
         }
@@ -81,12 +77,8 @@ void hhkb_hybrid_refresh_indicators(void) { keyboard_platform_tick(xTaskGetTickC
 #endif
 
 static bool hhkb_process_key(uint32_t key, bool pressed) {
-    if (key != HHKB_SYSTEM_1 && key != HHKB_SYSTEM_2) return false;
-    if (pressed) {
-        hhkb_set_system(key == HHKB_SYSTEM_2);
-        update_system_layer();
-    }
-    return true;
+    (void)pressed;
+    return key == HHKB_SYSTEM_1 || key == HHKB_SYSTEM_2;
 }
 
 static void hhkb_hid_led_change(uint8_t state) { caps_lock = (state & 0x02) != 0; }
