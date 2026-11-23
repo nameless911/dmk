@@ -709,6 +709,7 @@ typedef struct {
 #define DMK_HT 0x04000000
 #define DMK_TG 0x08000000
 #define DMK_MO 0x10000000
+#define DMK_LM 0x40000000 // Layer-Mod: layer active and mods held while pressed
 
 // Helper Macros for Keymaps
 #define MK(mod_mask, kc) (DMK_MK | ((mod_mask) << 8) | (kc))
@@ -716,6 +717,7 @@ typedef struct {
 #define HT_T(layer_or_mod, kc, ms) (DMK_HT | ((layer_or_mod) << 8) | (kc) | ((uint32_t)(ms) << 16))
 #define TG(layer) (DMK_TG | (layer))
 #define MO(layer) (DMK_MO | (layer))
+#define LM(layer, mod_mask) (DMK_LM | ((uint32_t)((mod_mask) & 0xFF) << 8) | ((layer) & 0xFF))
 
 #define OS(val)                                                                                                        \
     ((val) < 32 ? (DMK_OS | 0x20000 | (val))                                                                           \

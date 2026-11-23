@@ -175,6 +175,18 @@ static uint8_t from_via_mods(uint8_t via_mod) {
     return dmk_mod;
 }
 
+// QMK LM() uses a 5-bit modifier field: bits 0..3 = Ctrl/Shift/Alt/GUI, bit 4 = right-hand.
+static uint8_t from_via_mods5(uint8_t via_mod) {
+    uint8_t bits = via_mod & 0x0F;
+    return (via_mod & 0x10) ? (uint8_t)(bits << 4) : bits;
+}
+
+static uint8_t to_via_mods5(uint8_t dmk_mod) {
+    if ((dmk_mod & 0x0F) == 0 && (dmk_mod & 0xF0) != 0)
+        return (uint8_t)(0x10 | (dmk_mod >> 4));
+    return dmk_mod & 0x0F;
+}
+
 // Helper function to map DMK 32-bit keycodes to VIA 16-bit keycodes
 uint16_t to_via_keycode(uint32_t dmk_key) {
     if (dmk_key == K_TRNS)
@@ -224,6 +236,8 @@ uint16_t to_via_keycode(uint32_t dmk_key) {
         return 0x5220 | (dmk_key & 0xFF);
     if ((dmk_key & 0xFF000000) == DMK_TG)
         return 0x5260 | (dmk_key & 0xFF);
+    if ((dmk_key & 0xFF000000) == DMK_LM)
+        return (uint16_t)(0x5000 | ((dmk_key & 0x0F) << 5) | to_via_mods5((dmk_key >> 8) & 0xFF));
 
     if ((dmk_key & 0xFF000000) == DMK_HT) {
         uint8_t layer_or_mod = (dmk_key >> 8) & 0xFF;
@@ -301,6 +315,10 @@ uint32_t from_via_keycode(uint16_t via_key) {
         return HT(from_via_mods((via_key >> 8) & 0x1F), from_via_mouse_keycode(via_key & 0xFF));
     if (via_key >= 0x4000 && via_key <= 0x4FFF)
         return HT((via_key >> 8) & 0x0F, from_via_mouse_keycode(via_key & 0xFF));
+
+    // Layer-Mod: LM(layer, mods) = 0x5000 | layer << 5 | mods
+    if (via_key >= 0x5000 && via_key <= 0x51FF)
+        return LM((via_key >> 5) & 0x0F, from_via_mods5(via_key & 0x1F));
 
     // Layer Toggle
     if (via_key >= 0x5260 && via_key <= 0x527F) {

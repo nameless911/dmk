@@ -147,6 +147,20 @@ int main(void) {
     vial_eeprom_task();
     assert(settings_erases == 1 && keymap_erases == 1 && resets == 1);
 
+    // Layer-Mod LM(layer, mods): QMK 0x5000 | layer << 5 | 5-bit mods
+    assert(from_via_keycode(0x5044) == LM(2, MOD_LALT)); // LM(2, MOD_LALT)
+    assert(to_via_keycode(LM(2, MOD_LALT)) == 0x5044);
+    assert(from_via_keycode(0x5021) == LM(1, MOD_LCTRL));
+    assert(to_via_keycode(LM(1, MOD_LCTRL)) == 0x5021);
+    assert(from_via_keycode(0x5074) == LM(3, MOD_RALT)); // right-hand flag 0x10
+    assert(to_via_keycode(LM(3, MOD_RALT)) == 0x5074);
+    assert(from_via_keycode(0x51EF) == LM(15, MOD_HYPER));
+    assert(to_via_keycode(LM(15, MOD_HYPER)) == 0x51EF);
+    for (uint16_t v = 0x5000; v <= 0x51FF; v++) {
+        if ((v & 0x1F) == 0x10) continue; // "right-hand, no mods" has no DMK form
+        assert(to_via_keycode(from_via_keycode(v)) == v);
+    }
+
     puts("vial keycode translation tests passed");
     return 0;
 }
