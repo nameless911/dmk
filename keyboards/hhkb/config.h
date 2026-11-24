@@ -177,6 +177,41 @@ const uint32_t keymap[][NUM_KEYS] = {
     [BASE_2] = HHKB_JIS_BASE(HHKB_2),
     [HHKB_2] = {[0 ... NUM_KEYS - 1] = K_TRNS, [15] = K_CAPS},
 };
+#elif defined(HHKB_HYBRID)
+// Hybrid ANSI default, taken from the author's PD-KB800WS:
+// - Alt and both Shifts are LM(2, mod): held, they keep acting as the modifier and
+//   switch to layer 2, where Esc is `. So Alt+Esc = Alt+` (IME toggle on Windows)
+//   and Shift+Esc = ~.
+// - Stock-like Bluetooth keys: Fn+Q pairs the current profile, Fn+Ctrl+1..4 selects
+//   profile 1..4, Fn+Ctrl+0 toggles USB/Bluetooth output.
+// Custom keycodes follow via.json customKeycodes order (0x7E00 + index).
+#define HHKB_BT_SELECT(n) (0x7E02 + (n) - 1)
+#define HHKB_BT_PAIR_LAST 0x7E0D
+#define HHKB_BT_TOGGLE_OUTPUT 0x7E10
+const uint32_t keymap[][NUM_KEYS] = {
+    [BASE] = {
+        K_ESC,  K_1,    K_2,    K_3,    K_4,    K_5,    K_6,    K_7,    K_8,    K_9,    K_0,    K_MINS, K_EQL,  K_BKSL, K_GRAV,
+        K_TAB,  K_Q,    K_W,    K_E,    K_R,    K_T,    K_Y,    K_U,    K_I,    K_O,    K_P,    K_LBRC, K_RBRC, K_BSPC,
+        K_LCTL, K_A,    K_S,    K_D,    K_F,    K_G,    K_H,    K_J,    K_K,    K_L,    K_SCLN, K_QUOT, K_ENT,
+        LM(BASE_2, MOD_LSHIFT), K_Z, K_X, K_C, K_V, K_B, K_N,   K_M,    K_COMM, K_DOT,  K_SLSH, LM(BASE_2, MOD_RSHIFT), MO(HHKB),
+                K_LGUI, LM(BASE_2, MOD_LALT),   K_SPC,                  K_RALT, LM(BASE_2, MOD_LALT)
+    },
+    [HHKB] = {
+        K_PWR,  K_F1,   K_F2,   K_F3,   K_F4,   K_F5,   K_F6,   K_F7,   K_F8,   K_F9,   K_F10,  K_F11,  K_F12,  K_INS,  K_DEL,
+        K_CAPS, HHKB_BT_PAIR_LAST, ___, ___, ___, ___,  ___,    ___,    K_PSCR, K_SLCK, K_PAUS, K_UP,   ___,    K_BSPC,
+        MO(HHKB_2), K_VOLD, K_VOLU, K_MUTE, ___, ___,   K_PAST, K_PSLS, K_HOME, K_PGUP, K_LEFT, K_RGHT, K_PENT,
+        ___,    ___,    ___,    ___,    ___,    ___,    K_PPLS, K_PMNS, K_END,  K_PGDN, K_DOWN, ___,    ___,
+                ___,    ___,                    ___,                    ___,    ___
+    },
+    // Layer 2: only Esc changes; everything else falls through.
+    [BASE_2] = {[0 ... NUM_KEYS - 1] = K_TRNS, [0] = K_GRAV},
+    // Layer 3 (Fn+Ctrl): Bluetooth profiles and USB/Bluetooth output.
+    [HHKB_2] = {
+        [0 ... NUM_KEYS - 1] = K_TRNS,
+        [1] = HHKB_BT_SELECT(1), [2] = HHKB_BT_SELECT(2), [3] = HHKB_BT_SELECT(3), [4] = HHKB_BT_SELECT(4),
+        [10] = HHKB_BT_TOGGLE_OUTPUT,
+    }
+};
 #else
 const uint32_t keymap[][NUM_KEYS] = {
     // -------------------------------------------------------------------------
