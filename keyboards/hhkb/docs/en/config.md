@@ -44,6 +44,8 @@ PC13 reads LOW on USB power and HIGH on battery. On battery, DMK sends 6-key HID
 
 Four Bluetooth profiles are supported. **BT Select 1–4** selects a bond; **BT Pair 1–4** starts pairing in a chosen slot. **BT Next** cycles through slots. The last selected slot is saved in EEPROM.
 
+**BT Pair Mode** reproduces the stock two-step pairing: after it is pressed, the next **BT Select n** within 30 seconds pairs slot n instead of selecting it. The default Hybrid ANSI keymap puts it on Fn+Q and BT Select 1–4 / BT / USB on Fn+Ctrl+1–4 / Fn+Ctrl+0, as on the stock firmware.
+
 The factory nRF is SPI master on PA15/PB3–PB5 (Mode 3, 125 kHz). PB6 requests polling (Attention), PD2 controls module enable. STM32 application lives in Bank 2 starting at `0x08010000`.
 
 The common [VIA controls](via-debug.md) also configure USB matrix rate, calibration, actuation and hysteresis, Rapid Trigger when compiled in, ADC oversampling, hold-tap timing, and the base modes of both LEDs. Hybrid-specific battery, profile, and PC5 controls are listed below. The Classic factory calibration table must not be assumed to match Hybrid hardware.

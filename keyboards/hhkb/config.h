@@ -182,11 +182,12 @@ const uint32_t keymap[][NUM_KEYS] = {
 // - Alt and both Shifts are LM(2, mod): held, they keep acting as the modifier and
 //   switch to layer 2, where Esc is `. So Alt+Esc = Alt+` (IME toggle on Windows)
 //   and Shift+Esc = ~.
-// - Stock-like Bluetooth keys: Fn+Q pairs the current profile, Fn+Ctrl+1..4 selects
-//   profile 1..4, Fn+Ctrl+0 toggles USB/Bluetooth output.
+// - Stock-like Bluetooth keys: Fn+Q enters pairing mode and the next Fn+Ctrl+1..4
+//   pairs that profile; otherwise Fn+Ctrl+1..4 selects profile 1..4. Fn+Ctrl+0
+//   toggles USB/Bluetooth output.
 // Custom keycodes follow via.json customKeycodes order (0x7E00 + index).
 #define HHKB_BT_SELECT(n) (0x7E02 + (n) - 1)
-#define HHKB_BT_PAIR_LAST 0x7E0D
+#define HHKB_BT_PAIR_MODE 0x7E11
 #define HHKB_BT_TOGGLE_OUTPUT 0x7E10
 const uint32_t keymap[][NUM_KEYS] = {
     [BASE] = {
@@ -198,7 +199,7 @@ const uint32_t keymap[][NUM_KEYS] = {
     },
     [HHKB] = {
         K_PWR,  K_F1,   K_F2,   K_F3,   K_F4,   K_F5,   K_F6,   K_F7,   K_F8,   K_F9,   K_F10,  K_F11,  K_F12,  K_INS,  K_DEL,
-        K_CAPS, HHKB_BT_PAIR_LAST, ___, ___, ___, ___,  ___,    ___,    K_PSCR, K_SLCK, K_PAUS, K_UP,   ___,    K_BSPC,
+        K_CAPS, HHKB_BT_PAIR_MODE, ___, ___, ___, ___,  ___,    ___,    K_PSCR, K_SLCK, K_PAUS, K_UP,   ___,    K_BSPC,
         MO(HHKB_2), K_VOLD, K_VOLU, K_MUTE, ___, ___,   K_PAST, K_PSLS, K_HOME, K_PGUP, K_LEFT, K_RGHT, K_PENT,
         ___,    ___,    ___,    ___,    ___,    ___,    K_PPLS, K_PMNS, K_END,  K_PGDN, K_DOWN, ___,    ___,
                 ___,    ___,                    ___,                    ___,    ___

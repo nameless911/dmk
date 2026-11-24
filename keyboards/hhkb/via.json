@@ -87,6 +87,11 @@
       "name": "BT / USB",
       "title": "Switch between the last Bluetooth profile and USB",
       "shortName": "BT / USB"
+    },
+    {
+      "name": "BT Pair Mode",
+      "title": "Stock Fn+Q: the next BT Select pairs that profile (Hybrid)",
+      "shortName": "Pair Mode"
     }
   ],
   "matrix": {

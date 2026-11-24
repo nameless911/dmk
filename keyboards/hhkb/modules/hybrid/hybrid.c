@@ -768,18 +768,30 @@ void hhkb_hybrid_service(void) {
     GPIOB->BSRR = 1U << 6;
 }
 
+// Stock-style two-step pairing: BT Pair Mode (stock Fn+Q) arms pairing, and the
+// next BT Select n (stock Fn+Ctrl+n) pairs profile n instead of selecting it.
+#define HHKB_PAIR_MODE_TIMEOUT_MS 30000U
+static bool pair_mode_armed;
+static TickType_t pair_mode_until;
+
 static bool process_profile_key(uint32_t key, bool pressed) {
     enum {
         SELECT_FIRST = 0x7e02, PAIR_FIRST = 0x7e06, SHOW_BATTERY = 0x7e0a,
         POWER = 0x7e0b, SLEEP = 0x7e0c, PAIR_LAST = 0x7e0d,
         SHOW_PROFILE = 0x7e0e, CYCLE = 0x7e0f, TOGGLE_OUTPUT = 0x7e10,
-        END = 0x7e11
+        PAIR_MODE = 0x7e11, END = 0x7e12
     };
     if (key < SELECT_FIRST || key >= END) return false;
     if (pressed) {
+        TickType_t now = xTaskGetTickCount();
+        bool armed = pair_mode_armed && (int32_t)(pair_mode_until - now) > 0;
+        if (key != PAIR_MODE) pair_mode_armed = false;
         if (key < SHOW_BATTERY) {
-            bool pair = key >= PAIR_FIRST;
-            hhkb_hybrid_request_slot(key - (pair ? PAIR_FIRST : SELECT_FIRST), pair);
+            bool pair = key >= PAIR_FIRST || armed;
+            hhkb_hybrid_request_slot(key - (key >= PAIR_FIRST ? PAIR_FIRST : SELECT_FIRST), pair);
+        } else if (key == PAIR_MODE) {
+            pair_mode_armed = true;
+            pair_mode_until = now + pdMS_TO_TICKS(HHKB_PAIR_MODE_TIMEOUT_MS);
         } else {
             switch (key) {
             case SHOW_BATTERY: hhkb_hybrid_show_battery(); break;
